@@ -10,16 +10,21 @@ export function NewToggle(props) {
     const onHandleColor = "#fff";
     const boxShadow = null;
     const activeBoxShadow = "0 0 2px 3px #3bf";
-    const height = 28;
-    const width = 56;
+    /*   const height = 28;
+      const width = 56; */
     const checkedPos = Math.max(
-        width - props.handleDiameter - height,
-        width - props.handleDiameter - (height + props.handleDiameter) / 2
+        props.width - props.handleDiameter - props.height,
+        props.width - props.handleDiameter - (props.height + props.handleDiameter) / 2
     );
-    const uncheckedPos = Math.max(0, (height - props.handleDiameter) / 2);
+    const uncheckedPos = Math.max(0, (props.height - props.handleDiameter) / 2);
     const [pos, setPos] = useState(props.checked ? checkedPos : uncheckedPos);
     const [isDragging, setIsDragging] = useState(false);
-
+    const [hasOutline, setHasOutline] = useState(false);
+    const [startX, setStartX] = useState(null);
+    const [dragStartingTime, setDragStartingTime] = useState(null);
+    const [lastDragAt, setLastDragAt] = useState(null);
+    const [inputRef, setInputRef] = useState(null);
+    const [lastKeyUpAt, setLastKeyUpAt] = useState(null);
 
     /*  const pos = () => {
          setPos(props.checked ? checkedPos : uncheckedPos);
@@ -31,7 +36,7 @@ export function NewToggle(props) {
         textAlign: "left",
         opacity: disabled ? 0.5 : 1,
         direction: "ltr",
-        borderRadius: height / 2,
+        borderRadius: props.height / 2,
         WebkitTransition: "opacity 0.25s",
         MozTransition: "opacity 0.25s",
         transition: "opacity 0.25s",
@@ -43,9 +48,9 @@ export function NewToggle(props) {
         userSelect: "none"
     };
     const backgroundStyle = {
-        height,
-        width,
-        margin: Math.max(0, (props.handleDiameter - height) / 2),
+        height: props.height,
+        width: props.width,
+        margin: Math.max(0, (props.handleDiameter - props.height) / 2),
         position: "relative",
         background: getBackgroundColor(
             pos,
@@ -54,7 +59,7 @@ export function NewToggle(props) {
             offColor,
             onColor
         ),
-        borderRadius: height / 2,
+        borderRadius: props.height / 2,
         cursor: disabled ? "default" : "pointer",
         WebkitTransition: isDragging ? null : "background 0.25s",
         MozTransition: isDragging ? null : "background 0.25s",
@@ -62,10 +67,10 @@ export function NewToggle(props) {
     };
 
     const checkedIconStyle = {
-        height,
+        height: props.height,
         width: Math.min(
-            height * 1.5,
-            width - (props.handleDiameter + height) / 2 + 1
+            props.height * 1.5,
+            props.width - (props.handleDiameter + props.height) / 2 + 1
         ),
         position: "relative",
         opacity:
@@ -77,10 +82,10 @@ export function NewToggle(props) {
     };
 
     const uncheckedIconStyle = {
-        height,
+        height: props.height,
         width: Math.min(
-            height * 1.5,
-            width - (props.handleDiameter + height) / 2 + 1
+            props.height * 1.5,
+            props.width - (props.handleDiameter + props.height) / 2 + 1
         ),
         position: "absolute",
         opacity:
@@ -108,7 +113,7 @@ export function NewToggle(props) {
         alignItems: 'center',
         justifyContent: 'center',
         cursor: disabled ? "default" : "pointer",
-        borderRadius: height / 2,
+        borderRadius: props.height / 2,
         fontFamily: "Josefin Sans, sans-serif",
         color: '#676767',
         fontSize: '0.8em',
@@ -116,7 +121,7 @@ export function NewToggle(props) {
         boxShadow: '2px 2px 7px #6b6b6b',
         position: "absolute",
         transform: `translateX(${pos}px)`,
-        top: Math.max(0, (height - props.handleDiameter) / 2),
+        top: Math.max(0, (props.height - props.handleDiameter) / 2),
         outline: 0,
         //boxShadow: $hasOutline ? activeBoxShadow : boxShadow,
         border: 0,
@@ -142,79 +147,136 @@ export function NewToggle(props) {
         width: 1
     };
 
+    const onChange = (event) => {
+        /* const { checked, onChange, id } = this.props; */
+        props.onChange(!props.checked, event, props.id);
+    }
+
     const onClick = (event) => {
-        /* event.preventDefault();
+        event.preventDefault();
         inputRef.focus();
         onChange(event);
-        this.setState({ $hasOutline: false }); */
+        setHasOutline(false);
         console.log('clicked!');
     }
     const onDragStart = (clientX) => {
-        /*        this.$inputRef.focus();
-               this.setState({
-                   $startX: clientX,
-                   $hasOutline: true,
-                   $dragStartingTime: Date.now()
-               }); */
+        inputRef.focus();
+        setStartX(clientX)
+        setHasOutline(true)
+        setDragStartingTime(Date.now())
+    }
+    const onDragStop = (event) => {
+        const halfwayCheckpoint = (checkedPos + uncheckedPos) / 2;
+
+        // Simulate clicking the handle
+        const timeSinceStart = Date.now() - dragStartingTime;
+        if (!isDragging || timeSinceStart < 250) {
+            onChange(event);
+
+            // Handle dragging from checked position
+        } else if (props.checked) {
+            if (pos > halfwayCheckpoint) {
+                setPos(checkedPos);
+            } else {
+                onChange(event);
+            }
+            // Handle dragging from unchecked position
+        } else if (pos < halfwayCheckpoint) {
+            setPos(uncheckedPos)
+        } else {
+            onChange(event);
+        }
+
+
+        setIsDragging(false);
+        setHasOutline(false)
+        setLastDragAt(Date.now())
     }
 
+    const onDrag = (clientX) => {
+        const startPos = props.checked ? checkedPos : uncheckedPos;
+        const mousePos = startPos + clientX - startX;
+        // We need this check to fix a windows glitch where onDrag is triggered onMouseDown in some cases
+        if (!isDragging && clientX !== startX) {
+            setIsDragging(true);
+        }
+        const newPos = Math.min(
+            checkedPos,
+            Math.max(uncheckedPos, mousePos)
+        );
+        // Prevent unnecessary rerenders
+        if (newPos !== pos) {
+            setPos(newPos)
+        }
+    }
+
+    const onMouseMove = (event) => {
+        event.preventDefault();
+        onDrag(event.clientX);
+    }
+    const onMouseUp = (event) => {
+        onDragStop(event);
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+    }
     const onMouseDown = (event) => {
-        /*         event.preventDefault();
-                // Ignore right click and scroll
-                if (typeof event.button === "number" && event.button !== 0) {
-                    return;
-                }
-        
-                onDragStart(event.clientX);
-                window.addEventListener("mousemove", this.$onMouseMove);
-                window.addEventListener("mouseup", this.$onMouseUp); */
+        event.preventDefault();
+        // Ignore right click and scroll
+        if (typeof event.button === "number" && event.button !== 0) {
+            return;
+        }
+
+        onDragStart(event.clientX);
+        window.addEventListener("mousemove", onMouseMove);
+        window.addEventListener("mouseup", onMouseUp);
     }
 
     const onTouchStart = (event) => {
-        /*         this.$checkedStateFromDragging = null;
-                onDragStart(event.touches[0].clientX); */
+        // checkedStateFromDragging = null;
+        onDragStart(event.touches[0].clientX);
     }
 
     const onTouchMove = (event) => {
-        /*   onDrag(event.touches[0].clientX); */
+        onDrag(event.touches[0].clientX);
     }
 
     const onTouchEnd = (event) => {
-        /*        event.preventDefault();
-               onDragStop(event); */
+        event.preventDefault();
+        onDragStop(event);
     }
 
     const unsetHasOutline = () => {
-        //this.setState({ $hasOutline: false });
+        setHasOutline(false)
     }
 
     const getInputRef = (el) => {
-        /*  this.$inputRef = el; */
+        setInputRef(el)
     }
 
-    const setHasOutline = () => {
-        /*   this.setState({ $hasOutline: true }); */
-    }
+    /*     const setHasOutline = () => {
+            setHasOutline(true);
+        } */
 
     const onKeyUp = () => {
-        /*   this.$lastKeyUpAt = Date.now(); */
+        //this.$lastKeyUpAt = Date.now(); 
+        setLastKeyUpAt(Date.now())
     }
 
     const onInputChange = (event) => {
         // This condition is unfortunately needed in some browsers where the input's change event might get triggered
         // right after the dragstop event is triggered (occurs when dropping over a label element)
-        /*         if (Date.now() - this.$lastDragAt > 50) {
-                    this.$onChange(event);
-                    // Prevent clicking label, but not key activation from setting outline to true - yes, this is absurd
-                    if (Date.now() - this.$lastKeyUpAt > 50) {
-                        this.setState({ $hasOutline: false });
-                    }
-                } */
+        if (Date.now() - lastDragAt > 50) {
+            onChange(event);
+            // Prevent clicking label, but not key activation from setting outline to true - yes, this is absurd
+            if (Date.now() - lastKeyUpAt > 50) {
+                setHasOutline(false)
+            }
+        }
     }
 
     return (
         <div className="toggleSwitch-container">
-            <div className="toggleSwitch" style={({ ...rootStyle, ...props.rootStyleCustom })}>
+            <div className="toggleSwitch" style={({ ...rootStyle })}>
                 <div
                     className="react-switch-bg"
                     style={({ ...backgroundStyle, ...props.backgroundStyleCustom })}
