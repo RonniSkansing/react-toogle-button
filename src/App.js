@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
+import { NewToggle } from './components/NewToggle/NewToggle';
 import { ToggleButton } from './components/ToggleButton/ToggleButton'
 
 function App() {
@@ -28,6 +29,9 @@ function App() {
             boxShadow: "5px 5px 25px #272727"
           })} />
       </div>
+      <NewToggle
+        handleDiameter={41}
+      />
     </div>
   );
 }
