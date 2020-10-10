@@ -3,3 +3,46 @@
     grid-column-start: 3;
     grid-column-end: 5;
 }
+
+.toggleSwitch-container .toggleSwitch{
+    position: relative;
+    display: inline-block;
+    text-align: left;
+    direction: ltr;
+    -webkit-transition: opacity 0.25s;
+    -moz-transition: "opacity 0.25s";
+    transition: "opacity 0.25s";
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    touch-action: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.toggleSwitch-container .react-switch-bg{
+    box-shadow: 5px 5px 25px #272727;
+}
+.toggleSwitch-container .toggleSwitch .react-switch-handle{
+    display: flex;
+    align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-family: "Josefin Sans", sans-serif;
+        color: #676767;
+        font-size: 0.8em;
+        font-weight: 500;
+        box-shadow: 2px 2px 7px #6b6b6b;
+        position: absolute;
+        outline: 0;
+        border: 0;
+}
+.toggleSwitch-container .toggleSwitch input{
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1;
+    margin: -1;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1;
+}

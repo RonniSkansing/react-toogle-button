@@ -13,7 +13,7 @@ function App() {
   }
   return (
     <div className="App">
-      {/*       <div className="button-wrapper">
+      {/*  <div className="button-wrapper">
         <ToggleButton
           onChange={toggleChecked}
           checked={checked}
@@ -42,7 +42,6 @@ function App() {
           offColor={false}
           backgroundStyleCustom={({
             background: checked ? 'linear-gradient(90deg, #8cc63f, #22b573)' : 'linear-gradient(90deg, #f7931e, #ed3e9a)',
-            boxShadow: "5px 5px 25px #272727"
           })}
         />
       </div>
