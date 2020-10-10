@@ -1,7 +1,17 @@
 .App {
   text-align: center;
+  display: grid;
+  grid-template-columns: repeat(6, 13.7vw);
+  grid-column-gap: 1.67vw;
+  grid-template-rows: repeat(9, 8.4vh);
+  grid-row-gap: 0.98vh;
 }
-
+.button-wrapper{
+  grid-column-start: 2;
+  grid-column-end: 6;
+  grid-row-start: 2;
+  justify-self: center;
+}
 .App-logo {
   height: 40vmin;
   pointer-events: none;
